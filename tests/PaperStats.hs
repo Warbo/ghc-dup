@@ -15,7 +15,7 @@ import GHC.Stats
 import Control.Monad
 import System.Process
 import Data.Maybe
-import GHC.HeapView hiding (Box, value)
+--import GHC.HeapView hiding (Box, value)
 import Text.Printf
 import Data.Ord
 import GHC.Dup
