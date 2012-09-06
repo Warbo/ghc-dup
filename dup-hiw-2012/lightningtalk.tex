@@ -9,10 +9,10 @@
 \usepackage{listings}
 \usepackage{xcolor}
 \usepackage{tikz}
+\usetikzlibrary{backgrounds}
 \usepackage{mathpartir}
 
 \usetheme[titlepage0]{KIT}
-
 
 
 \definecolor{light-gray}{gray}{0.95}
@@ -50,7 +50,7 @@
 
 \maketitle
 
-\begin{frame}[fragile]
+\begin{frame}[fragile,t]
 \frametitle{Sharing can cause space leaks}
 
 \begin{haskell}
@@ -59,7 +59,8 @@ in (last xs, length xs)
 \end{haskell}
 \vfill
 \hide
-\begin{center}
+
+\centering 
 \begin{tikzpicture}
 [level/.style={sibling distance=20mm/2^#1,level distance=6mm},
 every node/.style={circle,inner sep=1.5pt},
@@ -68,25 +69,25 @@ eval/.style={circle,fill=black,color=black},
 ]
 \path
   (0,0) node (comma) {(,)}
- +(-1,-1) coordinate (ct1)
- +(1,-1) coordinate (ct2)
- +(0,-2) coordinate (clt);
-\onslide<1>{\node at (ct1) (t1) {T};}
-\onslide<2-4>{\node[eval] at (ct1) (t1) {:};}
-\onslide<5->{\node at (ct1) (t1) {1e8};}
+  (-1,-1) coordinate (ct1)
+  (1,-1) coordinate (ct2)
+  (0,-3) coordinate (clt);
+\onslide<2>{\node at (ct1) (t1) {T};}
+\onslide<3-5>{\node[eval] at (ct1) (t1) {:};}
+\onslide<6->{\node at (ct1) (t1) {1e8};}
 
-\onslide<1->{\node at (ct2) (t2) {T};}
+\onslide<2->{\node at (ct2) (t2) {T};}
 
-\onslide<1-2>{\node at (clt) (lt) {T};}
-\onslide<3->{\node[alias=cons0] at (clt) (lt) {:};}
-\onslide<3>{
+\onslide<2-3>{\node at (clt) (lt) {T};}
+\onslide<4->{\node[alias=cons0] at (clt) (lt) {:};}
+\onslide<4>{
 	\path (cons0) +(0,-1) node (n) {1};
 	\draw (cons0) -- (n);
 	\path (cons0) +(1,0) node (cons1) {T};
 	\draw (cons0) -- (cons1);
 }
-\onslide<4->{
-	\onslide<4-6>{
+\onslide<5->{
+	\onslide<5-7>{
 	\path (cons0) +(0,-1) node (n) {1};
 	\draw (cons0) -- (n);
 	\path (cons0) +(1,0) node (cons1) {:};
@@ -111,14 +112,17 @@ eval/.style={circle,fill=black,color=black},
 	}
 \draw (comma) -- (t1);
 \draw (comma) -- (t2);
-\onslide<1-3>{\draw (t1) -- (lt);}
-\onslide<4>{\draw (t1) -- (cons3);}
+\onslide<2-4>{\draw (t1) -- (lt);}
+\onslide<5>{\draw (t1) -- (cons3);}
 \draw (t2) -- (lt);
 \end{tikzpicture}
-\end{center}
+
+\vfill
+\onslide<6->{the programmer might want to avoid to have the list shared}
+
 \end{frame}
 
-\begin{frame}[fragile]
+\begin{frame}[fragile,t]
 \frametitle{Source transformations may help}
 
 \begin{haskell}
@@ -127,7 +131,7 @@ in (last $ xs (), length $ xs ())
 \end{haskell}
 \vfill
 
-\begin{center}
+\centering
 \begin{tikzpicture}
 [level/.style={sibling distance=20mm/2^#1,level distance=6mm},
 every node/.style={circle,inner sep=1.5pt},
@@ -146,7 +150,7 @@ eval/.style={circle,fill=black,color=black},
 \onslide<1->{\node at (ct2) (t2) {T};}
 
 \onslide<1->{\node at (cf) (f) {F};}
-\path (t1) +(0,-2) coordinate (clt);
+\path (t1) +(1,-2) coordinate (clt);
 \onslide<3>{\path (clt) node (lt) {T};}
 \onslide<4>{\node[alias=cons0] at (clt) (lt) {:};}
 \onslide<5-6>{\node[alias=cons0,color=gray] at (clt) (lt) {:};}
@@ -200,21 +204,21 @@ eval/.style={circle,fill=black,color=black},
 \end{tikzpicture}
 
 \vfill
-\onslide<7->{(works, but fagile -- might be thwarted by compiler optimizations)}
-\end{center}
+\onslide<7->{works, but fagile -- might be thwarted by compiler optimizations}
+
 \end{frame}
 
-\begin{frame}[fragile]
+\begin{frame}[fragile,t]
 \frametitle{Allow the programmer to copy a thunk: dup}
 
 \begin{haskell}
 let xs = [1..100000000]
 in (case dup xs of Box xs' -> last xs',
-    case dup xs of Box xs' -> length xs)
+    case dup xs of Box xs' -> length xs')
 \end{haskell}
 \vfill
 
-\begin{center}
+\centering
 \begin{tikzpicture}
 [level/.style={sibling distance=20mm/2^#1,level distance=6mm},
 every node/.style={circle,inner sep=1.5pt},
@@ -233,7 +237,7 @@ eval/.style={circle,fill=black,color=black},
 \onslide<1->{\node at (ct2) (t2) {T};}
 
 \onslide<1->{\node at (cot) (ot) {T};}
-\path (t1) +(0,-2) coordinate (clt);
+\path (t1) +(1,-2) coordinate (clt);
 \onslide<3>{\path (clt) node (lt) {T};
 	\draw[double] (lt) -- (ot);}
 \onslide<4>{\node[alias=cons0] at (clt) (lt) {:};}
@@ -289,9 +293,84 @@ eval/.style={circle,fill=black,color=black},
 
 \hide
 \onslide<7->
-consumer, not generator controls sharing\\
-no code restructuring
-\end{center}
+consumer, not generator controls sharing. no code restructuring
+
+\end{frame}
+
+\begin{frame}
+\frametitle{The sledgehammer: deepDup}
+
+\begin{columns}[T,onlytextwidth]
+\begin{column}{.3\linewidth}
+morally, \lstinline-deepDup x- copies the whole heap reachable by x
+\end{column}
+\begin{column}{.3\linewidth}
+\centering
+\begin{tikzpicture}
+[
+every node/.style={circle,inner sep=1.3pt},
+eval/.style={circle,fill=black,color=black},
+%every path/.style={->},
+]
+\path (0,0) node[eval] (eval) {:};
+\path<1> (0,-1) node (d1) {D};
+\path (0,-2) node (t1) {T};
+\path<2> (1,-2) node (t1') {T};
+\path<3-> (1,-2) node (t1') {C};
+\path<2-3> (1,-3) node (d2) {D};
+\path (0,-4) node (comma) {(,)};
+\path (-1,-5) node (t2) {T};
+\path (2,-5) node (t3) {T};
+\path<4-> (1,-4) node (comma') {(,)};
+\path<4> (0,-4.5) node (d3) {D};
+\path<4-6> (1.5,-4.5) node (d4) {D};
+\path<5> (0,-5) node (t2') {T};
+\path<6-> (0,-5) node (t2') {I};
+\path<7> (1,-5) node (t3') {T};
+\path<8-> (1,-5) node (t3') {I};
+
+\draw<1> (eval) -- (d1);
+\draw<1> (d1) -- (t1);
+\draw (t1) -- (comma);
+\draw<2-> (eval) -- (t1');
+\draw<2-3> (t1') -- (d2);
+\draw<2-3> (d2) -- (comma);
+\draw<2>[double] (t1) -- (t1');
+\draw<4-> (t1') -- (comma');
+\draw (comma) -- (t2);
+\draw (comma) -- (t3);
+\draw<4> (comma') -- (d3);
+\draw<4> (d3) -- (t2);
+\draw<5-> (comma') -- (t2');
+\draw<5>[double] (t2) -- (t2');
+\draw<4-6> (comma') -- (d4);
+\draw<4-6> (d4) -- (t3);
+\draw<7-> (comma') -- (t3');
+\draw<7>[double] (t3) -- (t3');
+
+\begin{scope}[on background layer,every path/.style={
+line width=.7cm, line cap=round, KITgreen50, line join = round
+}]
+\draw<1> (eval.center) -- (d1.center);
+\draw<2-3> (eval.center) -- (t1'.center) -- (d2.center);
+\draw<4> (eval.center) -- (t1'.center) -- (d2.center) -- (comma'.center) -- (d3.center)
+	(comma'.center) -- (d4.center);
+\draw<5-6> (eval.center) -- (t1'.center) -- (d2.center) -- (comma'.center) -- (t2'.center)
+	(comma'.center) -- (d4.center);
+\draw<7-> (eval.center) -- (t1'.center) -- (d2.center) -- (comma'.center) -- (t2'.center)
+	(comma'.center) -- (t3'.center);
+\end{scope}
+
+\path[use as bounding box] (-1.5,-5.5) (2.5,0);
+\end{tikzpicture}
+\end{column}
+\begin{column}{.3\linewidth}
+\onslide<9>{%
+really, \lstinline-deepDup x- copies the whole heap reachable by x lazily
+}
+\end{column}
+\end{columns}
+
 \end{frame}
 
 \newcommand{\mdup}{\text{\textsf{dup}}}
@@ -317,14 +396,16 @@ no code restructuring
 
 
 \begin{frame}
-\frametitle{The sledgehammer: deepDup}
+\frametitle{We have formal semantics!}
 
 \begin{mathpar}
 \inferrule
 {\sred{\Gamma,x\mapsto e, \fresh x\mapsto \hat e} {\fresh x} \Delta z \\ \fresh x \text{ fresh}}
 {\sred{\Gamma,x\mapsto e}{\sDup x} \Delta z}
 \sRule{Dup}
-\and
+\end{mathpar}
+\vfill
+\begin{mathpar}
 \inferrule
 {
 \sred{
@@ -345,18 +426,53 @@ x\mapsto e,
 {\sred{\Gamma,x\mapsto e}{\sDeepDup x} \Delta z}
 \sRule{Deep}
 \end{mathpar}
-
-\vfill
 \begin{center}
-\hide
-morally, \lstinline-deepDup x- copies the whole heap reachable by x
-
-\hide
 \vfill
-really, \lstinline-deepDup x- copies the whole heap reachable by x lazily
+\vfill
+(based on Launchbury’s „A natural seantics for lazy evaluation“)
 \end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{A related, younger idea}
+
+\begin{haskell}
+import GHC.Prim (noupdate)
+
+let xs = noupdate [1..100000000]
+in (last xs, length xs)
+\end{haskell}
+\vfill
+
+\centering
+For a thunk wrapped in\\[0.5em]
+{\Large \lstinline!noupdate :: a -> a!},\\[0.5em]
+no blackhole and no update frame is created\\[0.5em]
+$\Longrightarrow$ sharing is effectively prevented.
+\vfill
+
+(Ask me for my ghc branch.)
 
 \end{frame}
+
+\begin{frame}
+\frametitle{Where to read more}
+See\par {\centering\Large \url{http://arxiv.org/abs/1207.2017}\par} for
+\begin{itemize}
+\item more motiviation,
+\item benchmarked comparison with other approaches to avoid sharing,
+\item semantics and proofs,
+\item details on the implementation and
+\item a description of current shortcomings.
+\end{itemize}
+\vfill
+See\par {\centering\Large \url{http://darcs.nomeata.de/ghc-dup}\par} for
+\begin{itemize}
+\item the code.
+\end{itemize}
+
+\end{frame}
+
 
 
 
