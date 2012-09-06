@@ -5,7 +5,7 @@
 
 import Data.Word
 import Data.List
-import Data.List.Split
+--import Data.List.Split
 import Data.Bits
 import Data.Function
 import System.Environment
@@ -264,6 +264,9 @@ mainStats slow = do
     printf "\\makeatother\n"
 
 showLargeNum = intercalate "\\," . map reverse . reverse . splitEvery 3 . reverse . show 
+
+splitEvery _ [] = []
+splitEvery n l = take n l : splitEvery n (drop n l)
 
 
 mainRun :: (Bool, RunDesc) -> Variant -> S -> IO ()
