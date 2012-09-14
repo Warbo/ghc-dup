@@ -51,6 +51,21 @@
 
 \maketitle
 
+\begin{frame}
+\frametitle{My motivation}
+\begin{center}
+\parbox{.5\linewidth}{
+\centering
+We need to provide our programmers with better tools to\\[0.5em]
+\textbf{analyze}\\[0.5em]
+and\\[0.5em]
+\textbf{control}\\[0.5em]
+the space behaviour of their Haskell programs.
+}
+\end{center}
+\end{frame}
+
+
 \begin{frame}[fragile,t]
 \frametitle{Sharing can cause space leaks}
 
@@ -119,7 +134,7 @@ eval/.style={circle,fill=black,color=black},
 \end{tikzpicture}
 
 \vfill
-\onslide<6->{the programmer might want to avoid to have the list shared}
+\onslide<7->{the programmer might want to avoid to have the list shared}
 
 \end{frame}
 
@@ -205,7 +220,7 @@ eval/.style={circle,fill=black,color=black},
 \end{tikzpicture}
 
 \vfill
-\onslide<7->{works, but fagile -- might be thwarted by compiler optimizations}
+\onslide<7->{works, but fragile -- might be thwarted by compiler optimizations}
 
 \end{frame}
 
@@ -294,7 +309,7 @@ eval/.style={circle,fill=black,color=black},
 
 \hide
 \onslide<7->
-consumer, not generator controls sharing. no code restructuring
+the consumer, not the generator, controls sharing. no code restructuring.
 
 \end{frame}
 
@@ -325,8 +340,8 @@ eval/.style={circle,fill=black,color=black},
 \path<4-> (1,-4) node (comma') {(,)};
 \path<4> (0,-4.5) node (d3) {D};
 \path<4-6> (1.5,-4.5) node (d4) {D};
-\path<5> (0,-5) node (t2') {T};
-\path<6-> (0,-5) node (t2') {I};
+\path<5> (0,-5) node (t2') {C};
+\path<6-> (0,-5) node (t2') {C};
 \path<7> (1,-5) node (t3') {T};
 \path<8-> (1,-5) node (t3') {I};
 
@@ -397,7 +412,7 @@ really, \lstinline-deepDup x- copies the whole heap reachable by x lazily
 
 
 \begin{frame}
-\frametitle{We have formal semantics!}
+\frametitle{Comes with proofs included.}
 
 \begin{mathpar}
 \inferrule
@@ -433,6 +448,24 @@ x\mapsto e,
 (based on Launchbury’s „A natural seantics for lazy evaluation“)
 \end{center}
 \end{frame}
+\begin{frame}
+\frametitle{Where to read more}
+See\par {\centering\Large \url{http://arxiv.org/abs/1207.2017}\par} for
+\begin{itemize}
+\item more motiviation,
+\item benchmarked comparison with other approaches to avoid sharing,
+\item semantics and proofs,
+\item details on the implementation and
+\item a description of current shortcomings.
+\end{itemize}
+\vfill
+See\par {\centering\Large \url{http://darcs.nomeata.de/ghc-dup}\par} for
+\begin{itemize}
+\item the code.
+\end{itemize}
+
+\end{frame}
+
 
 \begin{frame}[fragile]
 \frametitle{A related, younger idea}
@@ -456,24 +489,20 @@ $\Longrightarrow$ sharing is effectively prevented.
 
 \end{frame}
 
-\begin{frame}
-\frametitle{Where to read more}
-See\par {\centering\Large \url{http://arxiv.org/abs/1207.2017}\par} for
-\begin{itemize}
-\item more motiviation,
-\item benchmarked comparison with other approaches to avoid sharing,
-\item semantics and proofs,
-\item details on the implementation and
-\item a description of current shortcomings.
-\end{itemize}
+
+\begin{frame}[fragile]
+\frametitle{Also nice: ghc-vis}
+
+\centering
+\textit{Demonstration}
 \vfill
-See\par {\centering\Large \url{http://darcs.nomeata.de/ghc-dup}\par} for
-\begin{itemize}
-\item the code.
-\end{itemize}
+see\\
+\url{http://hackage.haskell.org/package/ghc-vis}\\
+and\\
+\url{http://felsin9.de/nnis/ghc-vis/}
+\vfill
 
 \end{frame}
-
 
 
 
