@@ -93,6 +93,42 @@ deepDupClosure
     (ha) = foreign "C" dupHeapAlloced(clos "ptr") [];
 
     if (ha > 0) {
+	W_ type;
+	type = TO_W_(%INFO_TYPE(%GET_STD_INFO(clos)));
+	switch [0 .. N_CLOSURE_TYPES] type {
+	    // Do not copy FUN ptrs
+	    case FUN, FUN_1_0, FUN_0_1, FUN_1_1,
+		 FUN_2_0, FUN_0_2, FUN_STATIC: {
+		 goto type_not_ok;
+
+	    }
+	    // Do not copy data without pointers
+	    // (includes static data such as [])
+	    case CONSTR, CONSTR_1_0, CONSTR_0_1, CONSTR_1_1,
+		 CONSTR_2_0, CONSTR_0_2, CONSTR_STATIC, CONSTR_NOCAF_STATIC: {
+		if (TO_W_(%INFO_PTRS(%GET_STD_INFO(clos))) > 0) {
+		     RET_P(clos);
+		} else {
+		     goto type_ok;
+		}
+	    }
+
+	    // Thunks are good
+	    case THUNK, THUNK_1_0, THUNK_0_1, THUNK_2_0, THUNK_1_1, THUNK_0_2,
+		 THUNK_STATIC, THUNK_SELECTOR, AP: {
+		goto type_ok;
+	    }
+
+	    default: {
+		goto type_not_ok;
+	    }
+	}
+
+    type_not_ok:
+	foreign "C" dupUnsupportedWarning(clos "ptr") [];
+	RET_P(clos);
+
+    type_ok:
 	W_ len;
 	(len) = foreign "C" dupClosureSize(clos "ptr") [];
 
