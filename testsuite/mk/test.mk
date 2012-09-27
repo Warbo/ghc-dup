@@ -25,9 +25,11 @@ COMPILER     = ghc
 CONFIGDIR    = $(TOP)/config
 CONFIG       = $(CONFIGDIR)/$(COMPILER)
 
+PACKAGE_CONF = $(TOP)/../dist/package.conf.inplace 
+
 # TEST_HC_OPTS is passed to every invocation of TEST_HC 
 # in nested Makefiles
-TEST_HC_OPTS = -fforce-recomp -dcore-lint -dcmm-lint -dno-debug-output -no-user-$(GhcPackageDbFlag) -rtsopts $(EXTRA_HC_OPTS)
+TEST_HC_OPTS = -fforce-recomp -dcore-lint -dcmm-lint -dno-debug-output -no-user-$(GhcPackageDbFlag) -rtsopts $(EXTRA_HC_OPTS) -package-conf $(PACKAGE_CONF)
 
 RUNTEST_OPTS =
 
@@ -179,7 +181,11 @@ $(TIMEOUT_PROGRAM) :
 	@echo "Looks like you don't have timeout, building it first..."
 	$(MAKE) -C $(TOP)/timeout all
 
-test: $(TIMEOUT_PROGRAM)
+$(PACKAGE_CONF) :
+	@echo "You need to build the library first (cabal build)"
+	@false
+
+test: $(PACKAGE_CONF) $(TIMEOUT_PROGRAM)
 	$(PYTHON) $(RUNTESTS) $(RUNTEST_OPTS) \
 		$(patsubst %, --only=%, $(TEST)) \
 		$(patsubst %, --only=%, $(TESTS)) \
@@ -190,9 +196,9 @@ test: $(TIMEOUT_PROGRAM)
 
 verbose: test
 
-accept:
+accept: $(PACKAGE_CONF)
 	$(MAKE) accept=YES
 
-fast:
+fast: $(PACKAGE_CONF)
 	$(MAKE) fast=YES
 
