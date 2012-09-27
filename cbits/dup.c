@@ -15,10 +15,14 @@ StgWord dupHeapAlloced (StgClosure *closure) {
     return !closure_STATIC(closure);
 }
 
-void dupWarning(StgClosure *closure) {
+void dupStaticWarning(StgClosure *closure) {
     fprintf(stderr,"Static closure passed to dup!\n");
     //fprintf(stderr,"Type: %s\n", info_type(closure));
     // printObj(closure);
+}
+
+void dupUnsupportedWarning(StgClosure *closure) {
+    fprintf(stderr,"Closure of nun-dupable type %d passed to dup!\n", get_itbl(closure)->type);
 }
 
 void dupDebugPtr(StgWord word) {
