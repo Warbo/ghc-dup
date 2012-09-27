@@ -18,10 +18,9 @@ dupClosure
 	W_ type;
 	type = TO_W_(%INFO_TYPE(%GET_STD_INFO(clos)));
 	switch [0 .. N_CLOSURE_TYPES] type {
-	    // Do not copy FUN ptrs
 	    case FUN, FUN_1_0, FUN_0_1, FUN_1_1,
 		 FUN_2_0, FUN_0_2, FUN_STATIC: {
-		 goto type_not_ok;
+		 goto type_ok;
 
 	    }
 	    // Do not copy data without pointers
@@ -96,10 +95,9 @@ deepDupClosure
 	W_ type;
 	type = TO_W_(%INFO_TYPE(%GET_STD_INFO(clos)));
 	switch [0 .. N_CLOSURE_TYPES] type {
-	    // Do not copy FUN ptrs
 	    case FUN, FUN_1_0, FUN_0_1, FUN_1_1,
 		 FUN_2_0, FUN_0_2, FUN_STATIC: {
-		 goto type_not_ok;
+		 goto type_ok;
 
 	    }
 	    // Do not copy data without pointers
