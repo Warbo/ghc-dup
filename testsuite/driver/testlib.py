@@ -921,7 +921,7 @@ def do_compile( name, way, should_fail, top_mod, extra_mods, extra_hc_opts ):
     else:
         namebase = getTestOpts().with_namebase
 
-    (platform_specific, expected_stderr_file) = platform_wordsize_qualify(namebase, 'stderr')
+    (platform_specific, expected_stderr_file) = platform_wordsize_qualify(namebase, 'stderr', way)
     actual_stderr_file = qualify(name, 'comp.stderr')
 
     if not compare_outputs('stderr', \
@@ -1198,8 +1198,8 @@ def simple_run( name, way, prog, args ):
     check_prof = my_rts_flags.find("-p") != -1
 
     if not opts.ignore_output:
-        bad_stderr = not opts.combined_output and not check_stderr_ok(name)
-        bad_stdout = not check_stdout_ok(name)
+        bad_stderr = not opts.combined_output and not check_stderr_ok(name, way)
+        bad_stdout = not check_stdout_ok(name, way)
         if bad_stderr:
             return failBecause('bad stderr')
         if bad_stdout:
@@ -1207,7 +1207,7 @@ def simple_run( name, way, prog, args ):
         # exit_code > 127 probably indicates a crash, so don't try to run hp2ps.
         if check_hp and (exit_code <= 127 or exit_code == 251) and not check_hp_ok(name):
             return failBecause('bad heap profile')
-        if check_prof and not check_prof_ok(name):
+        if check_prof and not check_prof_ok(name, way):
             return failBecause('bad profile')
 
     return checkStats(stats_file, opts.stats_range_fields
@@ -1309,8 +1309,8 @@ def interpreter_run( name, way, extra_hc_opts, compile_only, top_mod ):
 
     # ToDo: if the sub-shell was killed by ^C, then exit
 
-    if getTestOpts().ignore_output or (check_stderr_ok(name) and
-                                       check_stdout_ok(name)):
+    if getTestOpts().ignore_output or (check_stderr_ok(name, way) and
+                                       check_stdout_ok(name, way )):
         return passed()
     else:
         return failBecause('bad stdout or stderr')
@@ -1426,14 +1426,14 @@ def extcore_run( name, way, extra_hc_opts, compile_only, top_mod ):
 # -----------------------------------------------------------------------------
 # Utils
 
-def check_stdout_ok( name ):
+def check_stdout_ok( name, way ):
    if getTestOpts().with_namebase == None:
        namebase = name
    else:
        namebase = getTestOpts().with_namebase
 
    actual_stdout_file   = qualify(name, 'run.stdout')
-   (platform_specific, expected_stdout_file) = platform_wordsize_qualify(namebase, 'stdout')
+   (platform_specific, expected_stdout_file) = platform_wordsize_qualify(namebase, 'stdout', way)
 
    def norm(str):
       if platform_specific:
@@ -1449,14 +1449,14 @@ def dump_stdout( name ):
    print 'Stdout:'
    print read_no_crs(qualify(name, 'run.stdout'))
 
-def check_stderr_ok( name ):
+def check_stderr_ok( name, way ):
    if getTestOpts().with_namebase == None:
        namebase = name
    else:
        namebase = getTestOpts().with_namebase
 
    actual_stderr_file   = qualify(name, 'run.stderr')
-   (platform_specific, expected_stderr_file) = platform_wordsize_qualify(namebase, 'stderr')
+   (platform_specific, expected_stderr_file) = platform_wordsize_qualify(namebase, 'stderr', way)
 
    def norm(str):
       if platform_specific:
@@ -1514,7 +1514,7 @@ def check_hp_ok(name):
         print "hp2ps error when processing heap profile for " + name
         return(False)
 
-def check_prof_ok(name):
+def check_prof_ok(name, way):
 
     prof_file = qualify(name,'prof')
 
@@ -1532,7 +1532,7 @@ def check_prof_ok(name):
         namebase = getTestOpts().with_namebase
 
     (platform_specific, expected_prof_file) = \
-        platform_wordsize_qualify(namebase, 'prof.sample')
+        platform_wordsize_qualify(namebase, 'prof.sample', way)
 
     # sample prof file is not required
     if not os.path.exists(expected_prof_file):
@@ -1980,17 +1980,18 @@ def qualify( name, suff ):
 # the major version of the compiler (e.g. 6.8.2 would be "6.8").  For
 # more fine-grained control use if_compiler_lt().
 #
-def platform_wordsize_qualify( name, suff ):
+def platform_wordsize_qualify( name, suff, way ):
 
     basepath = qualify(name, suff)
 
-    paths = [(platformSpecific, basepath + comp + vers + ws + plat)
+    paths = [(platformSpecific, basepath + comp + vers + ws + plat + w)
              for (platformSpecific, plat) in [(1, '-' + config.platform),
                                               (1, '-' + config.os),
                                               (0, '')]
              for ws   in ['-ws-' + config.wordsize, '']
              for comp in ['-' + config.compiler_type, '']
-             for vers in ['-' + config.compiler_maj_version, '']]
+             for vers in ['-' + config.compiler_maj_version, '']
+             for w    in ['-' + way, '']]
 
     dir = glob.glob(basepath + '*')
     dir = map (lambda d: normalise_slashes_(d), dir)
