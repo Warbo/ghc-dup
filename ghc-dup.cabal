@@ -6,6 +6,10 @@ Description:
   programmer to prevent the result of two evaluations of the same expression to
   be shared.
   .
+  See <http://arxiv.org/abs/1207.2017> for more background.
+  .
+  /This is still experimental software and can likely cause your program to crash./
+  .
   The work on this package has been supported by the Deutsche Telekom Stiftung
   (<http://telekom-stiftung.de>).
 License:             BSD3
