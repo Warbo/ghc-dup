@@ -1,5 +1,5 @@
 Name:                ghc-dup
-Version:             0.1
+Version:             0.2
 Synopsis:            Explicitly prevent sharing
 Description:
   This package provides two new operations, 'GHC.Dup.dup' and 'GHC.Dup.deepDup', that allow the
@@ -30,11 +30,12 @@ Library
   Exposed-modules: GHC.Dup
   Default-Language:    Haskell2010
   Build-depends:
-    base == 4.5.* || == 4.6.*,
+    base == 4.8.* || == 4.9.*,
     ghc
   C-Sources: cbits/dup.c cbits/dup-prim.cmm
   Hs-source-dirs: src/
   Ghc-options: -Wall
+  default-extensions: CPP
 
 --  if flag(prim-supports-any)
 --    cpp-options: -DPRIM_SUPPORTS_ANY

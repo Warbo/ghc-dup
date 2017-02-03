@@ -1,18 +1,18 @@
 #include "Cmm.h"
 
 
-dupClosure
+dupClosure ( W_ n )
 {
 /* args: R1 = closure to analyze */
 
     W_ clos;
-    clos = UNTAG(R1);
+    clos = UNTAG(n);
 
 //    W_ info;
 //    info = %GET_STD_INFO(clos);
 
     W_ ha;
-    (ha) = foreign "C" dupHeapAlloced(clos "ptr") [];
+    (ha) = ccall dupHeapAlloced(clos "ptr");
 
     if (ha > 0) {
 	W_ type;
@@ -28,7 +28,7 @@ dupClosure
 	    case CONSTR, CONSTR_1_0, CONSTR_0_1, CONSTR_1_1,
 		 CONSTR_2_0, CONSTR_0_2, CONSTR_STATIC, CONSTR_NOCAF_STATIC: {
 		if (TO_W_(%INFO_PTRS(%GET_STD_INFO(clos))) > 0) {
-		     RET_P(clos);
+		     return (clos);
 		} else {
 		     goto type_ok;
 		}
@@ -46,17 +46,17 @@ dupClosure
 	}
 
     type_not_ok:
-	foreign "C" dupUnsupportedWarning(clos "ptr") [];
-	RET_P(clos);
+	ccall dupUnsupportedWarning(clos "ptr");
+	return (clos);
 
     type_ok:
 	W_ len;
-	(len) = foreign "C" dupClosureSize(clos "ptr") [];
+	(len) = ccall dupClosureSize(clos "ptr");
 
 	W_ bytes;
 	bytes = WDS(len);
 
-	ALLOC_PRIM (bytes, R1_PTR, dupClosure);
+	ALLOC_PRIM (bytes/*, R1_PTR, dupClosure*/);
 
 	W_ copy;
 	copy = Hp - bytes + WDS(1);
@@ -70,26 +70,26 @@ dupClosure
 	     goto for;
 	}
 
-	RET_P(copy);
+	return (copy);
     } else {
-	foreign "C" dupStaticWarning(clos "ptr") [];
-	RET_P(clos);
+	ccall dupStaticWarning(clos "ptr");
+	return (clos);
     }
 }
 
-deepDupClosure
+deepDupClosure ( W_ n )
 {
 /* args: R1 = closure to analyze */
 
     W_ clos;
-    clos = UNTAG(R1);
+    clos = UNTAG(n);
 
 
     W_ info;
     info = %GET_STD_INFO(clos);
 
     W_ ha;
-    (ha) = foreign "C" dupHeapAlloced(clos "ptr") [];
+    (ha) = ccall dupHeapAlloced(clos "ptr");
 
     if (ha > 0) {
 	W_ type;
@@ -105,7 +105,7 @@ deepDupClosure
 	    case CONSTR, CONSTR_1_0, CONSTR_0_1, CONSTR_1_1,
 		 CONSTR_2_0, CONSTR_0_2, CONSTR_STATIC, CONSTR_NOCAF_STATIC: {
 		if (TO_W_(%INFO_PTRS(%GET_STD_INFO(clos))) > 0) {
-		     RET_P(clos);
+		     return (clos);
 		} else {
 		     goto type_ok;
 		}
@@ -123,12 +123,12 @@ deepDupClosure
 	}
 
     type_not_ok:
-	foreign "C" dupUnsupportedWarning(clos "ptr") [];
-	RET_P(clos);
+	ccall dupUnsupportedWarning(clos "ptr");
+	return (clos);
 
     type_ok:
 	W_ len;
-	(len) = foreign "C" dupClosureSize(clos "ptr") [];
+	(len) = ccall dupClosureSize(clos "ptr");
 
 	W_ ptrs;
 	ptrs  = TO_W_(%INFO_PTRS(info));
@@ -138,8 +138,8 @@ deepDupClosure
 	// thunk consisting of a header and the pointer
 	bytes = WDS(len) + ptrs * SIZEOF_StgAP + WDS (ptrs);
 
-	ALLOC_PRIM (bytes, R1_PTR, dupClosure);
-        //foreign "C" printObj(clos "ptr") [];
+	ALLOC_PRIM (bytes/*, R1_PTR, dupClosure*/);
+        //ccall printObj(clos "ptr");
 
 	W_ copy;
 	copy = Hp - WDS(len) + WDS(1);
@@ -156,7 +156,7 @@ deepDupClosure
         // We need to short-ciruit deepDup calls here
         if (StgHeader_info(copy) == stg_ap_2_upd_info
             &&
-            StgThunk_payload(copy,0) == ghczmdupzm0zi1_GHCziDup_deepDupFun_closure) {
+            StgThunk_payload(copy,0) == ghcduzuCURRENT_PACKAGE_KEY_GHCziDup_deepDupFun_closure) {
             goto done;
         }
 
@@ -190,7 +190,7 @@ deepDupClosure
 	    //StgAP_fun(ap) = Dup_deepDupFun_closure;
 
 	    SET_HDR(ap, stg_ap_2_upd_info, CCCS);
-	    StgThunk_payload(ap,0) = ghczmdupzm0zi1_GHCziDup_deepDupFun_closure;
+	    StgThunk_payload(ap,0) = ghcduzuCURRENT_PACKAGE_KEY_GHCziDup_deepDupFun_closure;
 
 	    // SET_HDR(ap, stg_deepDup_info, CCCS);
 
@@ -244,17 +244,17 @@ deepDupClosure
 	}
 
         done:
-	//foreign "C" printObj(copy "ptr") [];
-	RET_P(copy);
+	//ccall printObj(copy "ptr");
+	return (copy);
     } else {
-	foreign "C" dupStaticWarning(clos "ptr") [];
-	RET_P(clos);
+	ccall dupStaticWarning(clos "ptr");
+	return (clos);
     }
 }
 
 // inspired by rts/StgStdThunks.cmm 
 // But does not work yet.
-INFO_TABLE(stg_deepDup,1,0,THUNK_1_0,"stg_deepDup_info","stg_deepDup_info")
+/*INFO_TABLE(stg_deepDup,1,0,THUNK_1_0,"stg_deepDup_info","stg_deepDup_info")
 {
   TICK_ENT_DYN_THK();
   STK_CHK_NP(SIZEOF_StgUpdateFrame+WDS(1));
@@ -266,5 +266,4 @@ INFO_TABLE(stg_deepDup,1,0,THUNK_1_0,"stg_deepDup_info","stg_deepDup_info")
   Sp_adj(-1); // for stg_ap_*_ret
   R1 = StgThunk_payload(R1,0);
   jump deepDupClosure;
-}
-
+}*/
